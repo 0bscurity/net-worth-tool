@@ -1,9 +1,11 @@
+
+
 myfinancialtools.info {
     # Enable gzip compression
     encode gzip
 
     # Serve the React app
-    root * /var/www/net-worth-tool/frontend/dist
+    root * /app/net-worth-tool/frontend/dist
 
     # SPA fallback to index.html
     try_files {path} /index.html
