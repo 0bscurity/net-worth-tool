@@ -8,7 +8,7 @@ myfinancialtools.info {
     root * /home/deployer/app/net-worth-tool/frontend/dist
 
     # SPA fallback to index.html
-    try_files {path} /index.html
+    try_files {path} {path}/ /index.html
 
     # Static file server
     file_server
