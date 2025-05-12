@@ -1,6 +1,4 @@
-
-
-myfinancialtools.info {
+https://myfinancialtools.info {
     # Enable gzip compression
     encode gzip
 
