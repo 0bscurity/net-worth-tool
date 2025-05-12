@@ -1,0 +1,27 @@
+myfinancialtools.info {
+    # Enable gzip compression
+    encode gzip
+
+    # Serve the React app
+    root * /var/www/net-worth-tool/frontend/dist
+
+    # SPA fallback to index.html
+    try_files {path} /index.html
+
+    # Static file server
+    file_server
+
+    # Proxy all API requests to your Node backend
+    handle_path /api/* {
+        reverse_proxy localhost:5000
+    }
+
+    # Optional: log requests
+    log {
+        output file /var/log/caddy/myfinancialtools.access.log {
+            roll_size 10mb
+            roll_keep 5
+            roll_keep_for 72h
+        }
+    }
+}
