@@ -1,4 +1,9 @@
-https://myfinancialtools.info {
+{
+    # fallback global email for all site blocks
+    email {env.ACME_EMAIL}
+}
+
+myfinancialtools.info {
     # Enable gzip compression
     encode gzip
 
