@@ -1,0 +1,24 @@
+# Dependencies
+**/node_modules/
+
+# Environment files
+*.env
+*.env.local
+
+# Build output (Vite)
+frontend/dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pm2.log
+*.log
+
+# Coverage reports
+coverage/
+
+# IDE / OS cruft
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
