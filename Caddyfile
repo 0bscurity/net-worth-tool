@@ -5,7 +5,7 @@ myfinancialtools.info {
     encode gzip
 
     # Serve the React app
-    root * /home/deployer/app/net-worth-tool/frontend/dist
+    root * /frontend/dist
 
     # SPA fallback to index.html
     try_files {path} /index.html
