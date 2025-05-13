@@ -7,7 +7,7 @@ export default function ResponsiveNetWorthChart({ data }) {
 
   return (
     <div
-      style={{ height: "auto", width: "100%" }}
+      style={{ height: "262px", width: "100%" }}
       key={isMobile ? "mobile" : "desktop"}
     >
       {isMobile ? (

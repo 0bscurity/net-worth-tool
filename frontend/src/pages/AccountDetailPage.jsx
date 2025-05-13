@@ -99,8 +99,8 @@ export default function AccountDetailPage() {
   const interestPct = (account.interest * 100).toFixed(2);
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="my-4 max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-3">
         {/* Back Button */}
         <div className="flex justify-start">
           <button
@@ -122,7 +122,6 @@ export default function AccountDetailPage() {
               />
             </svg>
           </button>
-          <h1>{account.title}</h1>
         </div>
         <div>
           <div className="dropdown dropdown-bottom dropdown-end">
@@ -175,12 +174,11 @@ export default function AccountDetailPage() {
               })}
             </p>
           </div>
-          {interestPct > 0 && 
-          (
-              <div className="text-right">
-                <p className="text-sm">{interestPct}% APY</p>
-              </div>
-            )}
+          {interestPct > 0 && (
+            <div className="text-right">
+              <p className="text-sm">{interestPct}% APY</p>
+            </div>
+          )}
         </div>
 
         {/* Chart */}
@@ -206,10 +204,12 @@ export default function AccountDetailPage() {
       </div>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <button className="btn btn-outline btn-lg w-full">Withdraw</button>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 my-4">
+        <button className="btn btn-outline btn-lg w-full rounded-lg">
+          Withdraw
+        </button>
         <button
-          className="btn btn-primary btn-lg w-full"
+          className="btn btn-primary btn-lg w-full rounded-lg"
           onClick={() => setShowModal(true)}
         >
           Add Money

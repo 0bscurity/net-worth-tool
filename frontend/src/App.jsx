@@ -11,7 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-base-200">
+    <div className="min-h-screen bg-base-200 app-background">
       <Navbar />
       <main className="container mx-auto px-4">
         <Routes>
