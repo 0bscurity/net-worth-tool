@@ -5,8 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import acctRoutes from "./routes/accounts.js";
-// 👇 destructure the named export, not a default import
-import { checkJwt } from "./middleware/auth.js";
+import checkJwt from "./middleware/auth.js";
 
 dotenv.config();
 
