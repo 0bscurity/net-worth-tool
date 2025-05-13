@@ -1,6 +1,7 @@
 import Account from "../models/Account.js";
 
 export const addAccount = async (req, res) => {
+  console.log("🟢 [addAccount] called, body =", req.body);
   try {
     const { name, institution, type, balance, interest } = req.body;
     const userId = req.auth.sub; // Auth0 user identifier
@@ -13,6 +14,7 @@ export const addAccount = async (req, res) => {
       interest,
     });
     await account.save();
+    console.log("🟢 [addAccount] initial save complete, seeding contribution…");
 
     // Seed the initial balance as a contribution
     account.contributions.push({
@@ -21,10 +23,12 @@ export const addAccount = async (req, res) => {
       date: account.createdAt,
     });
     await account.save();
+    console.log("✅ [addAccount] contribution seeded, sending response");
 
     res.status(201).json(account);
   } catch (err) {
     console.error(err);
+    console.error("🔴 [addAccount] ERROR", err);
     res.status(400).json({ message: err.message });
   }
 };

@@ -10,7 +10,13 @@ import { checkJwt } from "./middleware/auth.js";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://myfinancialtools.info",
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
 // Connect to MongoDB
@@ -24,7 +30,6 @@ app.get("/api/health", (req, res) => {
   console.log("🩺 /api/health called");
   res.status(200).json({ status: "ok" });
 });
-
 
 // Protected routes
 app.use("/api/accounts", checkJwt, acctRoutes);
