@@ -19,7 +19,9 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Public health‐check (no auth)
-app.get("/api/health", (_, res) => res.status(200).json({ status: "ok" }));
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 // All other /api routes require a valid token
 // e.g. this will protect /api/accounts/*
