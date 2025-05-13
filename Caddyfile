@@ -7,6 +7,9 @@ myfinancialtools.info {
     # Enable gzip compression
     encode gzip
 
+    @api path /api/*
+    reverse_proxy @api localhost:5000
+
     # Serve the React app
     root * /home/deployer/app/net-worth-tool/frontend/dist
 
@@ -15,11 +18,6 @@ myfinancialtools.info {
 
     # Static file server
     file_server
-
-    # Proxy all API requests to your Node backend
-    handle_path /api/* {
-        reverse_proxy localhost:5000
-    }
 
     # Optional: log requests
     log {
