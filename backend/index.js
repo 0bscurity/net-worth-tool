@@ -20,10 +20,7 @@ mongoose
 // API routes
 app.use("/api/accounts", acctRoutes);
 
-// Health check under /api
-app.get("/api/health", (_, res) => {
-  res.status(200).json({ status: "ok" });
-});
+// Health check
 app.get("/", (_, res) => res.send("API is up 🚀"));
 
 const port = process.env.PORT || 5000;
