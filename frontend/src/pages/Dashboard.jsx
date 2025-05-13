@@ -4,12 +4,15 @@ import { Link } from "react-router-dom";
 import { useAccounts } from "../features/accounts/useAccounts";
 import AccountList from "../features/accounts/AccountList";
 import AccountCard from "../features/accounts/AccountCard";
-import NetWorthChart from "../components/ui/charts/NetWorthDoghnutChart";
+// import NetWorthChart from "../components/ui/charts/NetWorthDoghnutChart";
+import ResponsiveNetWorthChart from "../components/ui/charts/ResponsiveNetWorthChart";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Dashboard() {
   const { isAuthenticated, isLoading: authLoading } = useAuth0();
   const { accounts, loading: accountsLoading } = useAccounts();
   const [visibleCount, setVisibleCount] = useState(5);
+  const isMobile = useIsMobile();
 
   if (authLoading) return <div>Loading authentication…</div>;
   if (!isAuthenticated) return <Navigate to="/" replace />;
@@ -18,22 +21,48 @@ export default function Dashboard() {
   const totalNetWorth = accounts.reduce((sum, a) => sum + a.balance, 0);
   const labels = accounts.map((a) => a.institution);
   const values = accounts.map((a) => a.balance);
-  const colors = ["#3b82f6", "#ec4899", "#f59e0b", "#10b981"];
+  const colors = [
+    "#3b82f6",
+    "#ec4899",
+    "#f59e0b",
+    "#10b981",
+    "#8b5cf6",
+    "#ef4444",
+    "#14b8a6",
+    "#6366f1",
+    "#f87171",
+    "#eab308",
+    "#34d399",
+    "#a855f7",
+    "#f97316",
+    "#60a5fa",
+    "#f43f5e",
+    "#22c55e",
+    "#facc15",
+    "#4ade80",
+    "#c084fc",
+    "#fb7185",
+    "#818cf8",
+    "#d946ef",
+    "#6ee7b7",
+    "#fcd34d",
+    "#f472b6",
+  ];
 
   // slice for pagination
   const visibleAccounts = accounts.slice(0, visibleCount);
   const hasMore = accounts.length > visibleCount;
 
   return (
-    <div className="px-0 mt-5 max-w-5xl mx-auto">
+    <div className="px-0 mt-5 mb-5 max-w-5xl mx-auto">
       <div className="space-y-6 flex-1">
         {/* Summary + Chart */}
-        <div className="card bg-white shadow-lg p-6 lg:p-12 flex flex-col md:flex-row items-start justify-between">
+        <div className="card bg-white shadow-lg p-6 lg:p-12 flex flex-col lg:flex-row items-start justify-between">
           <div className="mb-6 xl:mb-0">
             <div className="text-lg font-semibold text-gray-500 mb-2">
               Your Net Worth
             </div>
-            <div className="text-5xl font-extrabold text-primary">
+            <div className="text-4xl md:text-5xl font-extrabold text-primary">
               $
               {totalNetWorth.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
@@ -41,21 +70,23 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row lg:items-center space-x-0 lg:space-x-12">
-            <div className="max-h-52 overflow-visible">
-              <NetWorthChart data={{ labels, values, colors }} />
+          <div className="flex flex-col md:flex-row md:items-center space-x-0 md:space-x-12">
+            <div className="w-full overflow-hidden">
+              <ResponsiveNetWorthChart data={{ labels, values, colors }} />
             </div>
-            <div className="space-y-2 mt-6 lg:mt-0">
-              {labels.map((label, i) => (
-                <div key={label} className="flex items-center space-x-2">
-                  <span
-                    className="w-3 h-3 rounded-sm"
-                    style={{ backgroundColor: colors[i % colors.length] }}
-                  />
-                  <span className="text-sm">{label}</span>
-                </div>
-              ))}
-            </div>
+            {!isMobile && (
+              <div className="flex flex-row md:flex-col flex-wrap md:space-y-2 space-x-2 md:space-x-0 mt-4 lg:mt-0">
+                {labels.map((label, i) => (
+                  <div key={label} className="flex items-center space-x-1">
+                    <span
+                      className="w-3 h-3 rounded-sm"
+                      style={{ backgroundColor: colors[i % colors.length] }}
+                    />
+                    <span className="text-xs md:text-sm">{label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
