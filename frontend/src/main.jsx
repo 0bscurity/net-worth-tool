@@ -22,6 +22,7 @@ createRoot(document.getElementById("root")).render(
         scope: "openid profile email",
       }}
       cacheLocation="localstorage"
+      useRefreshTokens={true}
     >
       <App />
     </Auth0Provider>
