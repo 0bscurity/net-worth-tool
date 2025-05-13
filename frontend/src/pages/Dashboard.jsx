@@ -25,7 +25,7 @@ export default function Dashboard() {
   const hasMore = accounts.length > visibleCount;
 
   return (
-    <div className="px-6 xl:px-0 mt-5 max-w-5xl mx-auto">
+    <div className="px-0 mt-5 max-w-5xl mx-auto">
       <div className="space-y-6 flex-1">
         {/* Summary + Chart */}
         <div className="card bg-white shadow-lg p-6 lg:p-12 flex flex-col md:flex-row items-start justify-between">
