@@ -5,7 +5,7 @@ export default function Home() {
   const { loginWithRedirect } = useAuth0();
 
   return (
-    <div className="relative bg-base-200">
+    <div className="relative">
       <div className="container mx-auto px-6 py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         {/* Text side */}
         <div className="relative z-10 space-y-6">
