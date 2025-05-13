@@ -17,7 +17,7 @@ createRoot(document.getElementById("root")).render(
       authorizationParams={{
         redirect_uri: `${window.location.origin}/dashboard`,
         audience: auth0Audience,
-        scope: "openid profile email",
+        scope: "openid profile email offline_access",
       }}
       cacheLocation="localstorage"
       useRefreshTokens={true}
