@@ -21,8 +21,10 @@ mongoose
 
 // Public health‐check
 app.get("/api/health", (req, res) => {
+  console.log("🩺 /api/health called");
   res.status(200).json({ status: "ok" });
 });
+
 
 // Protected routes
 app.use("/api/accounts", checkJwt, acctRoutes);
