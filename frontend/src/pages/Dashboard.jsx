@@ -1,4 +1,4 @@
-// import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth0 } from "@auth0/auth0-react";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAccounts } from "../features/accounts/useAccounts";
@@ -9,13 +9,13 @@ import ResponsiveNetWorthChart from "../components/ui/charts/ResponsiveNetWorthC
 import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Dashboard() {
-  // const { isAuthenticated, isLoading: authLoading } = useAuth0();
+  const { isAuthenticated, isLoading: authLoading } = useAuth0();
   const { accounts, loading: accountsLoading } = useAccounts();
   const [visibleCount, setVisibleCount] = useState(5);
   const isMobile = useIsMobile();
 
-  // if (authLoading) return <div>Loading authentication…</div>;
-  // if (!isAuthenticated) return <Navigate to="/" replace />;
+  if (authLoading) return <div>Loading authentication…</div>;
+  if (!isAuthenticated) return <Navigate to="/" replace />;
 
   // calculate totals & chart data
   const totalNetWorth = accounts.reduce((sum, a) => sum + a.balance, 0);
