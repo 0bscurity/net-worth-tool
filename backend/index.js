@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import acctRoutes from "./routes/accounts.js";
-import { checkJwt } from "./auth.js";    // ← import your JWT middleware
+import { checkJwt } from "./middleware/auth.js"; 
 
 dotenv.config();
 
