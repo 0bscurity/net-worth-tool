@@ -3,8 +3,10 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+
 import acctRoutes from "./routes/accounts.js";
-import checkJwt from "./middleware/auth.js";
+// 👇 destructure the named export, not a default import
+import { checkJwt } from "./middleware/auth.js";
 
 dotenv.config();
 
@@ -18,18 +20,21 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Public health‐check (no auth)
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
-});
+// Public health‐check
+app.get("/api/health", (_, res) =>
+  res.status(200).json({ status: "ok" })
+);
 
-// All other /api routes require a valid token
-// e.g. this will protect /api/accounts/*
+// Protected routes
 app.use("/api/accounts", checkJwt, acctRoutes);
 
-// If you really want a root‐level unprotected route
-// app.get("/", (_, res) => res.send("API is up 🚀"));
+// Global JSON error handler (so you see errors as JSON)
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res
+    .status(err.status || 500)
+    .json({ error: err.message || "Internal Server Error" });
+});
 
-// Start server
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`Listening on http://localhost:${port}`));
