@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "vite preview"
+    "start": "npm run serve"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.3.0",
