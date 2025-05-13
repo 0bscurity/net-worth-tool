@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "serve": "vite preview",
     "start": "npm run serve"
   },
   "dependencies": {
