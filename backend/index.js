@@ -5,7 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import acctRoutes from "./routes/accounts.js";
-import checkJwt from "./middleware/auth.js";
+import { checkJwt } from "./middleware/auth.js";
 
 dotenv.config();
 
@@ -20,19 +20,17 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Public health‐check
-app.get("/api/health", (_, res) =>
-  res.status(200).json({ status: "ok" })
-);
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 // Protected routes
 app.use("/api/accounts", checkJwt, acctRoutes);
 
-// Global JSON error handler (so you see errors as JSON)
+// JSON error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res
-    .status(err.status || 500)
-    .json({ error: err.message || "Internal Server Error" });
+  res.status(err.status || 500).json({ error: err.message });
 });
 
 const port = process.env.PORT || 5000;
