@@ -1,57 +1,79 @@
 // import { useAuth0 } from "@auth0/auth0-react";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAccounts } from "../features/accounts/useAccounts";
-import AccountList from "../features/accounts/AccountList";
-import AccountCard from "../features/accounts/AccountCard";
-// import NetWorthChart from "../components/ui/charts/NetWorthDoghnutChart";
-import ResponsiveNetWorthChart from "../components/ui/charts/ResponsiveNetWorthChart";
+import NetWorthLineChart from "../components/ui/charts/NetWorthLineChart";
 import { useIsMobile } from "../hooks/useIsMobile";
 
+const TIMEFRAMES = [
+  { label: "W", days: 7 },
+  { label: "M", days: 30 },
+  { label: "6M", days: 182 },
+  { label: "Y", days: 365 },
+  { label: "All", days: Infinity },
+];
+
 export default function Dashboard() {
-  // const { isAuthenticated, isLoading: authLoading } = useAuth0();
   const { accounts, loading: accountsLoading } = useAccounts();
   const [visibleCount, setVisibleCount] = useState(5);
   const isMobile = useIsMobile();
 
-  // if (authLoading) return <div>Loading authentication…</div>;
-  // if (!isAuthenticated) return <Navigate to="/" replace />;
-
   // calculate totals & chart data
   const totalNetWorth = accounts.reduce((sum, a) => sum + a.balance, 0);
-  const labels = accounts.map((a) => a.institution);
-  const values = accounts.map((a) => a.balance);
-  const colors = [
-    "#3b82f6",
-    "#ec4899",
-    "#f59e0b",
-    "#10b981",
-    "#8b5cf6",
-    "#ef4444",
-    "#14b8a6",
-    "#6366f1",
-    "#f87171",
-    "#eab308",
-    "#34d399",
-    "#a855f7",
-    "#f97316",
-    "#60a5fa",
-    "#f43f5e",
-    "#22c55e",
-    "#facc15",
-    "#4ade80",
-    "#c084fc",
-    "#fb7185",
-    "#818cf8",
-    "#d946ef",
-    "#6ee7b7",
-    "#fcd34d",
-    "#f472b6",
-  ];
 
   // slice for pagination
   const visibleAccounts = accounts.slice(0, visibleCount);
   const hasMore = accounts.length > visibleCount;
+
+  const [tf, setTf] = useState("All");
+
+  // 1) flatten all contributions
+  const allContribs = useMemo(
+    () =>
+      accounts.flatMap((acct) =>
+        (acct.contributions || []).map((c) => ({
+          date: new Date(c.date),
+          delta: c.type === "withdrawal" ? -c.amount : c.amount,
+        }))
+      ),
+    [accounts]
+  );
+
+  // 2) group by YYYY-MM-DD, sum deltas
+  const grouped = useMemo(() => {
+    const map = {};
+    allContribs.forEach(({ date, delta }) => {
+      const key = date.toISOString().slice(0, 10);
+      map[key] = (map[key] || 0) + delta;
+    });
+    return map;
+  }, [allContribs]);
+
+  // 3) build full, sorted, cumulative timeline
+  const fullTimeline = useMemo(() => {
+    const days = Object.keys(grouped).sort();
+    let running = 0;
+    return days.map((day) => {
+      running += grouped[day];
+      return { date: day, netWorth: running };
+    });
+  }, [grouped]);
+
+  // 4) filter by tf
+  const filteredTimeline = useMemo(() => {
+    if (tf === "All") return fullTimeline;
+    const days = TIMEFRAMES.find((t) => t.label === tf).days;
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+    return fullTimeline.filter((pt) => new Date(pt.date).getTime() >= cutoff);
+  }, [fullTimeline, tf]);
+
+  // 5) extract arrays
+  const dates = filteredTimeline.map((pt) => pt.date);
+  const netWorths = filteredTimeline.map((pt) => pt.netWorth);
+
+  // const perBarHeight = 21;
+  // const minHeight = 200;
+  // const chartHeight = Math.max(minHeight, labels.length * perBarHeight);
 
   return (
     <div className="px-0 mt-5 mb-5 max-w-5xl mx-auto">
@@ -71,7 +93,33 @@ export default function Dashboard() {
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center space-x-0 md:space-x-12">
-            <div className="w-full overflow-hidden">
+            <NetWorthLineChart dates={dates} netWorths={netWorths} />
+
+            <div className="flex justify-center mt-3">
+              <div className="inline-flex bg-gray-200 rounded-full p-1">
+                {TIMEFRAMES.map(({ label }, idx) => {
+                  const isActive = tf === label;
+                  return (
+                    <button
+                      key={label}
+                      onClick={() => setTf(label)}
+                      className={`btn btn-sm ${
+                        isActive
+                          ? "bg-white text-primary shadow"
+                          : "bg-transparent text-gray-600"
+                      }
+                      ${idx === 0 ? "rounded-l-full" : ""}
+                      ${idx === TIMEFRAMES.length - 1 ? "rounded-r-full" : ""}
+                      ${idx > 0 && idx < TIMEFRAMES.length - 1 ? "rounded-none" : ""}
+                      `}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {/* <div className="w-full" style={{ height: `${chartHeight}px` }}>
               <ResponsiveNetWorthChart data={{ labels, values, colors }} />
             </div>
             {!isMobile && (
@@ -86,7 +134,7 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
-            )}
+            )} */}
           </div>
         </div>
 

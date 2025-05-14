@@ -22,7 +22,6 @@ export default function NetWorthBarChart({ data }) {
     labels: data.labels,
     datasets: [
       {
-        label: "Net Worth",
         data: data.values,
         backgroundColor: data.colors,
         borderWidth: 1,
@@ -73,7 +72,7 @@ export default function NetWorthBarChart({ data }) {
 
   return (
     <div className="w-full">
-      <div className="relative w-full h-[250px] md:h-[400px]">
+      <div className="relative w-full `${chartHeight}px`">
         <Bar data={chartData} options={options} style={{ width: "100%" }} />
       </div>
       <div className="flex flex-wrap justify-center items-center mt-4 space-x-3 mx-2">
