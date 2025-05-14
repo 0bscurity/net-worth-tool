@@ -36,7 +36,7 @@ export default function AddAccountPage() {
   };
 
   return (
-    <div className="flex justify-center py-12 px-4">
+    <div className="flex justify-center py-12 px-0">
       <div className="card w-full max-w-2xl bg-base-100 shadow-xl p-8">
         <h2 className="text-3xl font-bold mb-6 text-center">Add New Account</h2>
         <form onSubmit={handleSubmit}>
