@@ -1,10 +1,4 @@
 // index.js
-dotenv.config();
-
-console.log("→ MONGO_URI:", process.env.MONGO_URI);
-console.log("→ AUTH0_DOMAIN:", process.env.AUTH0_DOMAIN);
-console.log("→ AUTH0_AUDIENCE:", process.env.AUTH0_AUDIENCE);
-
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -13,10 +7,10 @@ import dotenv from "dotenv";
 import acctRoutes from "./routes/accounts.js";
 import { checkJwt } from "./middleware/auth.js";
 
+dotenv.config();
+
 const app = express();
-app.use(
-  cors()
-);
+app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB
@@ -25,7 +19,7 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Public health‐check
+console.log("🔍 Mounting /api/health route");
 app.get("/api/health", (req, res) => {
   console.log("🩺 /api/health called");
   res.status(200).json({ status: "ok" });
