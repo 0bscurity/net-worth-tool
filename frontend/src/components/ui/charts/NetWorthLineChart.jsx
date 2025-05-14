@@ -21,15 +21,19 @@ ChartJS.register(
 
 // Helper to format numbers
 const formatNumber = (v) =>
-  v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M` :
-  v >= 1e3 ? `$${(v / 1e3).toFixed(0)}K` :
-  `$${v}`;
+  v >= 1e6
+    ? `$${(v / 1e6).toFixed(1)}M`
+    : v >= 1e3
+    ? `$${(v / 1e3).toFixed(0)}K`
+    : `$${v}`;
 
 // Helper to format dates as MM/DD
 const formatDate = (d) => {
   const dt = new Date(d);
-  return `${(dt.getMonth() + 1).toString().padStart(2, "0")}/` +
-         `${dt.getDate().toString().padStart(2, "0")}`;
+  return (
+    `${(dt.getMonth() + 1).toString().padStart(2, "0")}/` +
+    `${dt.getDate().toString().padStart(2, "0")}`
+  );
 };
 
 export default function NetWorthLineChart({ dates, netWorths }) {
@@ -63,13 +67,18 @@ export default function NetWorthLineChart({ dates, netWorths }) {
       },
     },
     scales: {
-      x: { ticks: { autoSkip: true, maxRotation: 0, minRotation: 0 } },
-      y: { beginAtZero: true, ticks: { callback: (v) => formatNumber(v) } },
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: { autoSkip: true, maxRotation: 0, minRotation: 0 },
+      },
+      y: {position: 'right', beginAtZero: true, ticks: { callback: (v) => formatNumber(v) } },
     },
   };
 
   return (
-    <div style={{ height: 240 }}>
+    <div className="w-full" style={{ height: 240 }}>
       <Line data={data} options={options} redraw />
     </div>
   );

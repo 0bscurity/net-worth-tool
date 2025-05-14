@@ -79,8 +79,9 @@ export default function Dashboard() {
     <div className="px-0 mt-5 mb-5 max-w-5xl mx-auto">
       <div className="space-y-6 flex-1">
         {/* Summary + Chart */}
-        <div className="card bg-white shadow-lg p-6 lg:p-12 flex flex-col lg:flex-row items-start justify-between">
-          <div className="mb-6 xl:mb-0">
+        <div className="card bg-white shadow-lg flex flex-col lg:flex-row">
+          {/* 1) Left col: header */}
+          <div className="px-6 lg:px-12 pt-6 lg:pt-12 mb-6 lg:mb-0">
             <div className="text-lg font-semibold text-gray-500 mb-2">
               Your Net Worth
             </div>
@@ -92,10 +93,15 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center space-x-0 md:space-x-12">
-            <NetWorthLineChart dates={dates} netWorths={netWorths} />
+          {/* 2) Right col: chart + pills stacked */}
+          <div className="flex-1 flex flex-col px-2 lg:px-12 lg:pt-12">
+            {/* Chart always full-width */}
+            <div className="w-full flex-1">
+              <NetWorthLineChart dates={dates} netWorths={netWorths} />
+            </div>
 
-            <div className="flex justify-center mt-3">
+            {/* Pills always under the chart */}
+            <div className="mt-4 mb-6 flex justify-center">
               <div className="inline-flex bg-gray-200 rounded-full p-1">
                 {TIMEFRAMES.map(({ label }, idx) => {
                   const isActive = tf === label;
@@ -103,15 +109,17 @@ export default function Dashboard() {
                     <button
                       key={label}
                       onClick={() => setTf(label)}
-                      className={`btn btn-sm ${
-                        isActive
-                          ? "bg-white text-primary shadow"
-                          : "bg-transparent text-gray-600"
-                      }
-                      ${idx === 0 ? "rounded-l-full" : ""}
-                      ${idx === TIMEFRAMES.length - 1 ? "rounded-r-full" : ""}
-                      ${idx > 0 && idx < TIMEFRAMES.length - 1 ? "rounded-none" : ""}
-                      `}
+                      className={`
+                btn btn-sm
+                ${
+                  isActive
+                    ? "bg-white text-primary shadow"
+                    : "bg-transparent text-gray-600"
+                }
+                ${idx === 0 ? "rounded-l-full" : ""}
+                ${idx === TIMEFRAMES.length - 1 ? "rounded-r-full" : ""}
+                ${idx > 0 && idx < TIMEFRAMES.length - 1 ? "rounded-none" : ""}
+              `}
                     >
                       {label}
                     </button>
@@ -119,22 +127,6 @@ export default function Dashboard() {
                 })}
               </div>
             </div>
-            {/* <div className="w-full" style={{ height: `${chartHeight}px` }}>
-              <ResponsiveNetWorthChart data={{ labels, values, colors }} />
-            </div>
-            {!isMobile && (
-              <div className="flex flex-row md:flex-col flex-wrap md:space-y-2 space-x-2 md:space-x-0 mt-4 lg:mt-0">
-                {labels.map((label, i) => (
-                  <div key={label} className="flex items-center space-x-1">
-                    <span
-                      className="w-3 h-3 rounded-sm"
-                      style={{ backgroundColor: colors[i % colors.length] }}
-                    />
-                    <span className="text-xs md:text-sm">{label}</span>
-                  </div>
-                ))}
-              </div>
-            )} */}
           </div>
         </div>
 

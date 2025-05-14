@@ -122,6 +122,9 @@ export default function AccountDetailPage() {
               />
             </svg>
           </button>
+          <p className="ms-4 font-semibold">
+            {account.name || account.institution}
+          </p>
         </div>
         <div>
           <div className="dropdown dropdown-bottom dropdown-end">
@@ -184,30 +187,41 @@ export default function AccountDetailPage() {
         {/* Chart */}
         <AccountHistoryChart key={tf} dates={dates} balances={balances} />
 
-        {/* Timeframe Selector */}
-        <div className="flex justify-center space-x-3 mt-4">
-          {TIMEFRAMES.map(({ label }) => (
-            <button
-              key={label}
-              className={`btn btn-sm ${
-                tf === label ? "btn-primary" : "btn-outline"
-              }`}
-              onClick={() => {
-                console.log("Switching to", label);
-                setTf(label);
-              }}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="flex justify-center">
+          <div className="inline-flex bg-gray-200 rounded-full p-1">
+            {TIMEFRAMES.map(({ label }, idx) => {
+              const isActive = tf === label;
+              return (
+                <button
+                  key={label}
+                  onClick={() => setTf(label)}
+                  className={`btn btn-sm ${
+                    isActive
+                      ? "bg-white text-primary shadow"
+                      : "bg-transparent text-gray-600"
+                  }
+                      ${idx === 0 ? "rounded-l-full" : ""}
+                      ${idx === TIMEFRAMES.length - 1 ? "rounded-r-full" : ""}
+                      ${
+                        idx > 0 && idx < TIMEFRAMES.length - 1
+                          ? "rounded-none"
+                          : ""
+                      }
+                      `}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Action Buttons */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 my-4">
-        <button className="btn btn-outline btn-lg w-full rounded-lg">
+        {/* <button className="btn btn-outline btn-lg w-full rounded-lg">
           Withdraw
-        </button>
+        </button> */}
         <button
           className="btn btn-primary btn-lg w-full rounded-lg"
           onClick={() => setShowModal(true)}

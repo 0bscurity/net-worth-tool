@@ -29,8 +29,8 @@ const formatNumber = (value) => {
 // Helper function to format dates as MM/DD
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
   return `${month}/${day}`;
 };
 
@@ -46,6 +46,7 @@ export default function AccountHistoryChart({ dates, balances }) {
         fill: false,
         tension: 0.4,
         borderColor: "#3b82f6",
+        pointBackgroundColor: "#3b82f6",
       },
     ],
   };
@@ -68,12 +69,17 @@ export default function AccountHistoryChart({ dates, balances }) {
     },
     scales: {
       y: {
+        position: "right",
         beginAtZero: true,
         ticks: {
           callback: (value) => formatNumber(value),
         },
       },
       x: {
+        grid: {
+          display: false,
+          drawBorder: false,
+        },
         ticks: {
           autoSkip: true,
           maxRotation: 0,
