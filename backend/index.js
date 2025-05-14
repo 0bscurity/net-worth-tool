@@ -11,11 +11,7 @@ dotenv.config();
 
 const app = express();
 app.use(
-  cors({
-    origin: "https://myfinancialtools.info",
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  cors()
 );
 app.use(express.json());
 
