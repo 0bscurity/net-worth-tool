@@ -40,7 +40,7 @@ export default function Home() {
           <ul className="space-y-3 text-base-content">
             <li className="flex items-center">
               <span className="text-primary mr-2">✓</span>
-              Automatic account aggregation
+              Passive income monitoring
             </li>
             <li className="flex items-center">
               <span className="text-primary mr-2">✓</span>
