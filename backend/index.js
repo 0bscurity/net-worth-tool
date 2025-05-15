@@ -35,7 +35,7 @@ app.get("/api/health", (req, res) => {
 // Protected routes
 app.use("/api/accounts", checkJwt, acctRoutes);
 app.use("/api/projections", checkJwt, projectionRoutes);
-app.use("/api/subusers", subuserRoutes);
+app.use("/api/subusers", checkJwt, subuserRoutes);
 
 // JSON error handler
 app.use((err, req, res, next) => {
