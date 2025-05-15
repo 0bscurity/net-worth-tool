@@ -6,7 +6,7 @@ export default function Navbar() {
   const { isAuthenticated, loginWithRedirect, logout, isLoading } = useAuth0();
 
   return (
-    <div className="navbar bg-base-100 shadow-sm">
+    <div className="navbar bg-base-100 shadow-sm z-1000">
       <div className="navbar-start">
         {isAuthenticated && (
           <div className="dropdown">
@@ -52,13 +52,15 @@ export default function Navbar() {
         </Link>
       </div>
 
-      <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1">
-          <li>
-            <Link to={"./dashboard"}>Dashboard</Link>
-          </li>
-        </ul>
-      </div>
+      {isAuthenticated && (
+        <div className="navbar-center hidden lg:flex">
+          <ul className="menu menu-horizontal px-1">
+            <li>
+              <Link to={"./dashboard"}>Dashboard</Link>
+            </li>
+          </ul>
+        </div>
+      )}
       <div className="navbar-end">
         {isLoading ? (
           <span>Loading…</span>
@@ -72,7 +74,10 @@ export default function Navbar() {
             </button>
           </div>
         ) : (
-          <button className="btn btn-sm" onClick={() => loginWithRedirect()}>
+          <button
+            className="btn btn-sm btn-primary"
+            onClick={() => loginWithRedirect()}
+          >
             Log In
           </button>
         )}
