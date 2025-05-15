@@ -1,5 +1,6 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { Link } from "react-router-dom";
+import logo from "../../assets/logo.png";
 
 export default function Navbar() {
   const { isAuthenticated, loginWithRedirect, logout, isLoading } = useAuth0();
@@ -32,12 +33,23 @@ export default function Navbar() {
               <li>
                 <Link to={"./dashboard"}>Dashboard</Link>
               </li>
+              {/* <li>
+                <Link to={"./projections"}>Projections</Link>
+              </li> */}
             </ul>
           </div>
         )}
-        <a className="btn btn-ghost text-xl">
-          <Link to={!isAuthenticated ? "./" : "./dashboard"}>MFT</Link>
-        </a>
+        <Link
+          to={!isAuthenticated ? "./" : "./dashboard"}
+          className="btn btn-ghost text-xl px-0"
+        >
+          <img
+            src={logo}
+            alt="My Financial Tools logo"
+            width={62}
+            height={62}
+          />
+        </Link>
       </div>
 
       <div className="navbar-center hidden lg:flex">

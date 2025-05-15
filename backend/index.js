@@ -3,8 +3,9 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-
+import projectionRoutes from "./routes/projections.js";
 import acctRoutes from "./routes/accounts.js";
+import subuserRoutes from "./routes/subusers.js";
 import { checkJwt } from "./middleware/auth.js";
 
 dotenv.config();
@@ -33,6 +34,8 @@ app.get("/api/health", (req, res) => {
 
 // Protected routes
 app.use("/api/accounts", checkJwt, acctRoutes);
+app.use("/api/projections", checkJwt, projectionRoutes);
+app.use("/api/subusers", subuserRoutes);
 
 // JSON error handler
 app.use((err, req, res, next) => {

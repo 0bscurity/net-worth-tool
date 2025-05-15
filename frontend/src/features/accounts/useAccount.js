@@ -11,14 +11,18 @@ export function useAccount() {
   const { getAccessTokenSilently, getAccessTokenWithPopup } = useAuth0();
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(null);
+  const [error, setError] = useState(null);
 
   const getToken = async () => {
     try {
-      return await getAccessTokenSilently({ authorizationParams:{ audience: AUDIENCE }});
+      return await getAccessTokenSilently({
+        authorizationParams: { audience: AUDIENCE },
+      });
     } catch (e) {
       if (e.error === "consent_required") {
-        return getAccessTokenWithPopup({ authorizationParams:{ audience: AUDIENCE }});
+        return getAccessTokenWithPopup({
+          authorizationParams: { audience: AUDIENCE },
+        });
       }
       throw e;
     }
@@ -30,7 +34,7 @@ export function useAccount() {
       try {
         const token = await getToken();
         const { data } = await axios.get(`${API_BASE}/accounts/${id}`, {
-          headers:{ Authorization:`Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         setAccount(data);
       } catch (err) {
@@ -48,7 +52,7 @@ export function useAccount() {
       const { data } = await axios.post(
         `${API_BASE}/accounts/${id}/contributions`,
         { amount, type, date },
-        { headers:{ Authorization:`Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setAccount(data);
       return data;
@@ -60,7 +64,7 @@ export function useAccount() {
     }
   };
 
-    const deleteAccount = async () => {
+  const deleteAccount = async () => {
     const token = await getToken();
     await axios.delete(`${API_BASE}/accounts/${id}`, {
       headers: { Authorization: `Bearer ${token}` },

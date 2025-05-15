@@ -3,10 +3,11 @@ import Account from "../models/Account.js";
 export const addAccount = async (req, res) => {
   console.log("🟢 [addAccount] called, body =", req.body);
   try {
-    const { name, institution, type, balance, interest } = req.body;
+    const { name, institution, type, balance, interest, subuserId } = req.body;
     const userId = req.auth.sub; // Auth0 user identifier
     const account = new Account({
       userId,
+      subuserId,
       name,
       institution,
       type,
@@ -42,7 +43,7 @@ export const updateAccount = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.auth.sub;
-    const updates = req.body;
+    const { subuserId, ...updates } = req.body;
 
     // Find the account and ensure it belongs to this user
     const account = await Account.findOne({ _id: id, userId });
@@ -51,7 +52,7 @@ export const updateAccount = async (req, res) => {
     }
 
     // Apply updates
-    Object.assign(account, updates);
+    Object.assign(account, { ...updates, subuserId });
     await account.save();
 
     res.json(account);

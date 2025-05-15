@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAccounts } from "../features/accounts/useAccounts";
+import { useSubusers } from "../features/subusers/useSubusers";
 
 export default function AddAccountPage() {
   const [name, setName] = useState("");
@@ -9,9 +10,13 @@ export default function AddAccountPage() {
   const [type, setType] = useState("Checking");
   const [balance, setBalance] = useState("");
   const [interest, setInterest] = useState("");
+  const [subuserId, setSubuserId] = useState(""); // ← new
   const [submitting, setSubmitting] = useState(false);
+
   const { addAccount } = useAccounts();
   const navigate = useNavigate();
+
+  const { subusers, loading: subLoading, error: subError } = useSubusers();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,6 +28,7 @@ export default function AddAccountPage() {
         type,
         balance: parseFloat(balance),
         interest: interest ? parseFloat(interest) / 100 : 0,
+        ...(subuserId && { subuserId }),
       });
       navigate("/dashboard");
     } catch (err) {
@@ -35,13 +41,15 @@ export default function AddAccountPage() {
     }
   };
 
+  if (subLoading) return <div>Loading people…</div>;
+  if (subError) return <div className="text-red-500">Error loading people</div>;
+
   return (
     <div className="flex justify-center py-12 px-0">
       <div className="card w-full max-w-2xl bg-base-100 shadow-xl p-8">
-        <h2 className="text-3xl font-bold mb-6 text-center">New Account</h2>
+        <h2 className="text-3xl font-bold mb-6 text-center">New Financial Account</h2>
         <form onSubmit={handleSubmit}>
-
-          {/* Name */}
+          {/* Account Name */}
           <div className="form-control mb-6">
             <label className="label">
               <span className="label-text">Account Name</span>
@@ -56,6 +64,26 @@ export default function AddAccountPage() {
             />
           </div>
 
+          {/* — Subuser selector — */}
+          <div className="form-control mb-6">
+            <label className="label">
+              <span className="label-text">Belongs to</span>
+            </label>
+            <select
+              value={subuserId}
+              onChange={(e) => setSubuserId(e.target.value)}
+              className="select select-bordered w-full"
+            >
+              <option value="">Primary User</option>
+              {subusers.map((s) => (
+                <option key={s._id} value={s._id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Other fields */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Institution */}
             <div className="form-control">
@@ -124,8 +152,8 @@ export default function AddAccountPage() {
             </div>
           </div>
 
-          {/* Submit button spans full width */}
-          <div className="lg:col-span-2 flex justify-center mt-4">
+          {/* Submit */}
+          <div className="flex justify-center mt-8">
             <button
               type="submit"
               className={`btn btn-primary px-10 ${submitting ? "loading" : ""}`}
