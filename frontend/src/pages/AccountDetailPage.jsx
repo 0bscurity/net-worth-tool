@@ -108,7 +108,10 @@ export default function AccountDetailPage() {
   const handleSaveCategory = async () => {
     try {
       if (editMode) {
-        await updateCategory(editingCategoryId, { name: categoryName, amount: categoryAmount });
+        await updateCategory(editingCategoryId, {
+          name: categoryName,
+          amount: categoryAmount,
+        });
       } else {
         await addCategory(categoryName, categoryAmount);
       }
@@ -116,7 +119,9 @@ export default function AccountDetailPage() {
       setCategoryName("");
       setCategoryAmount(0);
       setEditMode(false);
-    } catch (err) { console.error(err) }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (loading) return <div>Loading account…</div>;
@@ -124,13 +129,11 @@ export default function AccountDetailPage() {
   if (!account) return <div className="text-gray-500">Account not found</div>;
 
   const dates = filtered.map((pt) => pt.date.toLocaleDateString());
-  const balances = filtered.map(pt=>pt.balance);
+  const balances = filtered.map((pt) => pt.balance);
   const currentBalance = account.balance;
   const interestPct = (account.interest * 100).toFixed(2);
-  const totalAllocated = account.categories.reduce(
-    (sum, c) => sum + c.amount,
-    0
-  );
+  const cats = account.categories || [];
+  const totalAllocated = cats.reduce((sum, c) => sum + c.amount, 0);
   const balanceAfterAllocations = currentBalance - totalAllocated;
 
   return (
@@ -406,7 +409,6 @@ export default function AccountDetailPage() {
             ))}
           </div>
         </div>
-      
       </div>
 
       {toDelete && (
@@ -461,10 +463,7 @@ export default function AccountDetailPage() {
               >
                 Cancel
               </button>
-              <button
-                className="btn btn-primary"
-                onClick={handleSaveCategory}
-              >
+              <button className="btn btn-primary" onClick={handleSaveCategory}>
                 Save
               </button>
             </div>
