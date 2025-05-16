@@ -87,8 +87,8 @@ export default function AccountDetailPage() {
   const openAddCategoryModal = () => {
     setEditMode(false);
     setEditingCategoryId(null);
-    setCategoryName(""); // clear the name field
-    setCategoryAmount(0); // clear the amount field
+    setCategoryName("");
+    setCategoryAmount(0);
     setShowCategoryModal(true);
   };
 
@@ -105,30 +105,18 @@ export default function AccountDetailPage() {
     setShowCategoryModal(true);
   };
 
-  const handleUpdateCategory = async () => {
+  const handleSaveCategory = async () => {
     try {
-      await updateCategory(editingCategoryId, {
-        name: categoryName,
-        amount: categoryAmount,
-      });
+      if (editMode) {
+        await updateCategory(editingCategoryId, { name: categoryName, amount: categoryAmount });
+      } else {
+        await addCategory(categoryName, categoryAmount);
+      }
+      setShowCategoryModal(false);
+      setCategoryName("");
+      setCategoryAmount(0);
       setEditMode(false);
-      setShowCategoryModal(false);
-      setCategoryName("");
-      setCategoryAmount(0);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleAddCategory = async () => {
-    try {
-      await addCategory(categoryName, categoryAmount);
-      setCategoryName("");
-      setCategoryAmount(0);
-      setShowCategoryModal(false);
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err) }
   };
 
   if (loading) return <div>Loading account…</div>;
@@ -136,7 +124,7 @@ export default function AccountDetailPage() {
   if (!account) return <div className="text-gray-500">Account not found</div>;
 
   const dates = filtered.map((pt) => pt.date.toLocaleDateString());
-  const balances = filtered.map((pt) => pt.balance);
+  const balances = filtered.map(pt=>pt.balance);
   const currentBalance = account.balance;
   const interestPct = (account.interest * 100).toFixed(2);
   const totalAllocated = account.categories.reduce(
@@ -475,7 +463,7 @@ export default function AccountDetailPage() {
               </button>
               <button
                 className="btn btn-primary"
-                onClick={editMode ? handleUpdateCategory : handleAddCategory}
+                onClick={handleSaveCategory}
               >
                 Save
               </button>
