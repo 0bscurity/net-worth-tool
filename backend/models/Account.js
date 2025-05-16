@@ -26,10 +26,12 @@ const accountSchema = new mongoose.Schema(
       default: null,
     },
     contributions: [ContributionSchema],
-    categories: {
-      type: [CategorySchema],
-      default: [],
-    },
+    categories: [
+      {
+        name: { type: String, required: true },
+        amount: { type: Number, required: true },
+      },
+    ],
   },
   { timestamps: true }
 );
