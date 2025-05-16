@@ -9,7 +9,6 @@ const ContributionSchema = new mongoose.Schema({
 const CategorySchema = new mongoose.Schema({
   name: { type: String, required: true },
   amount: { type: Number, required: true },
-  includeInBalance: { type: Boolean, default: true },
 });
 
 const accountSchema = new mongoose.Schema(
@@ -27,7 +26,10 @@ const accountSchema = new mongoose.Schema(
       default: null,
     },
     contributions: [ContributionSchema],
-    categories: [CategorySchema],
+    categories: {
+      type: [CategorySchema],
+      default: [],
+    },
   },
   { timestamps: true }
 );
