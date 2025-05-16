@@ -310,7 +310,7 @@ export default function AccountDetailPage() {
             </button>
           </div>
           <ul className="space-y-2">
-            {account.categories.map((category) => (
+            {(account.categories || []).map((category) => (
               <li
                 key={category._id}
                 className="flex justify-between items-center p-3 bg-gray-50 rounded-md hover:shadow transition-shadow"
