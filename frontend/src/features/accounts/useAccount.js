@@ -64,6 +64,84 @@ export function useAccount() {
     }
   };
 
+  const deleteContribution = async (contributionId) => {
+    try {
+      const token = await getToken();
+      await axios.delete(
+        `${API_BASE}/accounts/${id}/contributions/${contributionId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      // Update the account by filtering out the deleted contribution
+      setAccount((prev) => ({
+        ...prev,
+        contributions: prev.contributions.filter(
+          (c) => c._id !== contributionId
+        ),
+      }));
+    } catch (err) {
+      setError(err);
+      throw err;
+    }
+  };
+
+  const addCategory = async (name, amount) => {
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const { data } = await axios.post(
+        `${API_BASE}/accounts/${id}/categories`,
+        { name, amount },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAccount(data);
+      return data;
+    } catch (err) {
+      setError(err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateCategory = async (categoryId, updates) => {
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const { data } = await axios.put(
+        `${API_BASE}/accounts/${id}/categories/${categoryId}`,
+        updates,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAccount(data);
+      return data;
+    } catch (err) {
+      setError(err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteCategory = async (categoryId) => {
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const { data } = await axios.delete(
+        `${API_BASE}/accounts/${id}/categories/${categoryId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAccount(data);
+      return data;
+    } catch (err) {
+      setError(err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const deleteAccount = async () => {
     const token = await getToken();
     await axios.delete(`${API_BASE}/accounts/${id}`, {
@@ -71,5 +149,15 @@ export function useAccount() {
     });
   };
 
-  return { account, loading, error, addContribution, deleteAccount };
+  return {
+    account,
+    loading,
+    error,
+    addContribution,
+    deleteContribution,
+    deleteAccount,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+  };
 }

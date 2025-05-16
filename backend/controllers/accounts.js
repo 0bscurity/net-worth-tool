@@ -109,3 +109,80 @@ export const addContribution = async (req, res) => {
   await account.save();
   res.status(201).json(account);
 };
+
+// Delete a contribution
+export const deleteContribution = async (req, res) => {
+  try {
+    const { id, contributionId } = req.params;
+    const userId = req.auth.sub;
+
+    const account = await Account.findOne({ _id: id, userId });
+    if (!account) return res.status(404).json({ message: "Account not found" });
+
+    // Find the contribution and calculate the balance adjustment
+    const contribution = account.contributions.id(contributionId);
+    if (!contribution)
+      return res.status(404).json({ message: "Contribution not found" });
+
+    const adjustment =
+      contribution.type === "withdrawal"
+        ? contribution.amount
+        : -contribution.amount;
+
+    // Adjust the balance and remove the contribution
+    account.balance += adjustment;
+    contribution.remove();
+    await account.save();
+
+    res.json(account);
+  } catch (err) {
+    console.error("deleteContribution error:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+// POST /api/accounts/:id/categories
+export const addCategory = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.auth.sub;
+  const { name, amount } = req.body;
+
+  const account = await Account.findOne({ _id: id, userId });
+  if (!account) return res.status(404).json({ message: "Not found" });
+
+  account.categories.push({ name, amount });
+  await account.save();
+  res.json(account);
+};
+
+// PUT /api/accounts/:id/categories/:categoryId
+export const updateCategory = async (req, res) => {
+  const { id, categoryId } = req.params;
+  const userId = req.auth.sub;
+  const { name, amount } = req.body;
+
+  const account = await Account.findOne({ _id: id, userId });
+  if (!account) return res.status(404).json({ message: "Not found" });
+
+  const cat = account.categories.id(categoryId);
+  if (!cat) return res.status(404).json({ message: "Not found" });
+
+  cat.name = name;
+  cat.amount = amount;
+  await account.save();
+  res.json(account);
+};
+
+// DELETE /api/accounts/:id/categories/:categoryId
+export const deleteCategory = async (req, res) => {
+  const { id, categoryId } = req.params;
+  const userId = req.auth.sub;
+
+  const account = await Account.findOne({ _id: id, userId });
+  if (!account) return res.status(404).json({ message: "Not found" });
+
+  account.categories = account.categories.filter(
+    (c) => c._id.toString() !== categoryId
+  );
+  await account.save();
+  res.json(account);
+};

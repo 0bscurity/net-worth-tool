@@ -13,25 +13,36 @@ const TIMEFRAMES = [
 ];
 
 export default function AccountDetailPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { account, loading, error, addContribution, deleteAccount } =
-    useAccount(id);
   const [tf, setTf] = useState("All");
-
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryAmount, setCategoryAmount] = useState(0);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [toDelete, setToDelete] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
 
-  // 1) Safe defaults
+  const {
+    account,
+    loading,
+    error,
+    addContribution,
+    deleteAccount,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+  } = useAccount(id);
+
+  // Build timeline
   const contributions = account?.contributions ?? [];
   const storedBalance = account?.balance ?? 0;
 
-  // 2) fullTimeline always runs (hooks must be top level)
   const fullTimeline = useMemo(() => {
-    // Build the points from contributions
     const points = contributions
       .map((c) => ({
         date: new Date(c.date),
@@ -43,24 +54,15 @@ export default function AccountDetailPage() {
         arr.push({ date, balance: prev + delta });
         return arr;
       }, []);
-
-    // Always ensure at least one point at "today" with the stored balance
     const now = new Date();
     const seed = { date: now, balance: storedBalance };
-
-    if (points.length === 0) {
-      return [seed];
-    }
-
+    if (!points.length) return [seed];
     const last = points[points.length - 1];
-    if (last.date.toDateString() !== now.toDateString()) {
-      return [...points, seed];
-    }
-
-    return points;
+    return last.date.toDateString() === now.toDateString()
+      ? points
+      : [...points, seed];
   }, [contributions, storedBalance]);
 
-  // 3) Filtered timeline
   const filtered = useMemo(() => {
     if (tf === "All") return fullTimeline;
     const days = TIMEFRAMES.find((t) => t.label === tf).days;
@@ -82,21 +84,66 @@ export default function AccountDetailPage() {
     }
   };
 
-  const handleConfirmDelete = async () => {
-    await deleteAccount(); // deletes this single account
-    navigate("/dashboard"); // go back to list
+  const openAddCategoryModal = () => {
+    setEditMode(false);
+    setEditingCategoryId(null);
+    setCategoryName(""); // clear the name field
+    setCategoryAmount(0); // clear the amount field
+    setShowCategoryModal(true);
   };
 
-  // 4) Early returns
+  const handleConfirmDelete = async () => {
+    await deleteAccount();
+    navigate("/dashboard");
+  };
+
+  const handleEditCategory = (category) => {
+    setCategoryName(category.name);
+    setCategoryAmount(category.amount);
+    setEditingCategoryId(category._id);
+    setEditMode(true);
+    setShowCategoryModal(true);
+  };
+
+  const handleUpdateCategory = async () => {
+    try {
+      await updateCategory(editingCategoryId, {
+        name: categoryName,
+        amount: categoryAmount,
+      });
+      setEditMode(false);
+      setShowCategoryModal(false);
+      setCategoryName("");
+      setCategoryAmount(0);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddCategory = async () => {
+    try {
+      await addCategory(categoryName, categoryAmount);
+      setCategoryName("");
+      setCategoryAmount(0);
+      setShowCategoryModal(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) return <div>Loading account…</div>;
   if (error) return <div className="text-red-500">Error loading account</div>;
   if (!account) return <div className="text-gray-500">Account not found</div>;
 
-  // 5) Prepare chart inputs
   const dates = filtered.map((pt) => pt.date.toLocaleDateString());
   const balances = filtered.map((pt) => pt.balance);
   const currentBalance = account.balance;
   const interestPct = (account.interest * 100).toFixed(2);
+  const totalAllocated = account.categories.reduce(
+    (sum, c) => sum + c.amount,
+    0
+  );
+  const balanceAfterAllocations = currentBalance - totalAllocated;
 
   return (
     <div className="my-4 max-w-4xl mx-auto">
@@ -230,6 +277,150 @@ export default function AccountDetailPage() {
         </button>
       </div>
 
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="card bg-white shadow-lg p-3 lg:p-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-xl font-semibold">Allocations</h3>
+              <p className="text-sm text-gray-500">
+                Unallocated balance: $
+                {balanceAfterAllocations.toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
+              </p>
+            </div>
+            <button
+              onClick={openAddCategoryModal}
+              className="btn btn-primary btn-circle btn-sm"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="h-5 w-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+            </button>
+          </div>
+          <ul className="space-y-2">
+            {account.categories.map((category) => (
+              <li
+                key={category._id}
+                className="flex justify-between items-center p-3 bg-gray-50 rounded-md hover:shadow transition-shadow"
+              >
+                <div>
+                  <p className="font-semibold">{category.name}</p>
+                  <p className="text-sm text-gray-500">
+                    Amount: ${category.amount.toLocaleString()}
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleEditCategory(category)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => deleteCategory(category._id)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Delete"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Transaction History */}
+        <div className="card bg-white shadow p-3 lg:p-6">
+          <h3 className="text-xl font-semibold mb-4">Transaction History</h3>
+          <div className="space-y-2">
+            {account.contributions.map((c, i) => (
+              <div key={i} className="flex justify-between items-center">
+                <div>
+                  <span className="font-medium capitalize">{c.type}</span>{" "}
+                  <span className="text-sm text-gray-500 ml-2">
+                    {new Date(c.date).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span
+                    className={
+                      c.type === "withdrawal"
+                        ? "text-red-500"
+                        : "text-green-500"
+                    }
+                  >
+                    {c.type === "withdrawal" ? "−" : "+"}$
+                    {c.amount.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                  {/* <button
+                  onClick={() => handleDeleteContribution(c._id)}
+                  className="text-red-500 hover:text-red-700 transition-colors"
+                  title="Delete Contribution"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button> */}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      
+      </div>
+
       {toDelete && (
         <div className="modal modal-open">
           <div className="modal-box">
@@ -248,6 +439,51 @@ export default function AccountDetailPage() {
       )}
 
       {/* ——— DaisyUI Modal ——— */}
+
+      {showCategoryModal && (
+        <div
+          className="modal modal-open"
+          onClick={() => setShowCategoryModal(false)} // <-- clicking backdrop
+        >
+          <div
+            className="modal-box"
+            onClick={(e) => e.stopPropagation()} // <-- prevent inside clicks from bubbling
+          >
+            <h3 className="font-bold text-lg">
+              {editMode ? "Edit Category" : "Add Category"}
+            </h3>
+            <input
+              type="text"
+              placeholder="Category Name"
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              className="input input-bordered w-full mb-2"
+            />
+            <input
+              type="number"
+              placeholder="Amount"
+              value={categoryAmount}
+              onChange={(e) => setCategoryAmount(parseFloat(e.target.value))}
+              className="input input-bordered w-full mb-2"
+            />
+            <div className="modal-action">
+              <button
+                className="btn"
+                onClick={() => setShowCategoryModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={editMode ? handleUpdateCategory : handleAddCategory}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <input
         type="checkbox"
         id="contrib-modal"
@@ -327,33 +563,6 @@ export default function AccountDetailPage() {
           </div>
         </div>
       )}
-
-      {/* Transaction History */}
-      <div className="card bg-white shadow p-6">
-        <h3 className="text-xl font-semibold mb-4">Transaction History</h3>
-        <div className="space-y-2">
-          {account.contributions.map((c, i) => (
-            <div key={i} className="flex justify-between items-center">
-              <div>
-                <span className="font-medium capitalize">{c.type}</span>{" "}
-                <span className="text-sm text-gray-500 ml-2">
-                  {new Date(c.date).toLocaleDateString()}
-                </span>
-              </div>
-              <div
-                className={
-                  c.type === "withdrawal" ? "text-red-500" : "text-green-500"
-                }
-              >
-                {c.type === "withdrawal" ? "−" : "+"}$
-                {c.amount.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

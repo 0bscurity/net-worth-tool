@@ -6,9 +6,15 @@ const ContributionSchema = new mongoose.Schema({
   type: { type: String, enum: ["deposit", "withdrawal"], default: "deposit" },
 });
 
+const CategorySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  amount: { type: Number, required: true },
+  includeInBalance: { type: Boolean, default: true },
+});
+
 const accountSchema = new mongoose.Schema(
   {
-    userId: { type: String, required: true }, // Auth0 sub
+    userId: { type: String, required: true },
     name: { type: String, required: false },
     institution: { type: String, required: true },
     type: { type: String, required: true },
@@ -21,6 +27,7 @@ const accountSchema = new mongoose.Schema(
       default: null,
     },
     contributions: [ContributionSchema],
+    categories: [CategorySchema],
   },
   { timestamps: true }
 );
