@@ -17,15 +17,30 @@ const accountSchema = new mongoose.Schema(
     name: { type: String, required: false },
     institution: { type: String, required: true },
     type: { type: String, required: true },
-    balance: { type: Number, required: true },
-    interest: { type: Number, default: 0 },
+    balance: {
+      type: Number,
+      default: 0,
+      required: function () {
+        return this.type !== "Investment";
+      },
+    },
+    interest: {
+      type: Number,
+      default: 0,
+      required: function () {
+        return this.type !== "Investment";
+      },
+    },
     dividend: { type: Number, default: 0 },
     subuserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subuser",
       default: null,
     },
-    contributions: [ContributionSchema],
+    contributions: {
+      type: [ContributionSchema],
+      default: [], 
+    },
     categories: [
       {
         name: { type: String, required: true },

@@ -64,6 +64,25 @@ export function useAccount() {
     }
   };
 
+  const withdraw = async (amount, date) => {
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const { data } = await axios.post(
+        `${API_BASE}/accounts/${id}/withdraw`,
+        { amount, date },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAccount(data);
+      return data;
+    } catch (err) {
+      setError(err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const deleteContribution = async (contributionId) => {
     try {
       const token = await getToken();
@@ -159,5 +178,6 @@ export function useAccount() {
     addCategory,
     updateCategory,
     deleteCategory,
+    withdraw,
   };
 }
