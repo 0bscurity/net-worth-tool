@@ -175,14 +175,7 @@ export default function AccountDetailPage() {
 
   const dates = filtered.map((pt) => pt.date.toLocaleDateString());
   const balances = filtered.map((pt) => pt.balance);
-  const currentBalance = isInvest
-    ? Array.isArray(holdings)
-      ? holdings.reduce(
-          (sum, h) => sum + h.totalShares * (h.currentPrice || 0),
-          0
-        )
-      : 0
-    : account.balance;
+  const currentBalance = account.balance;
   const interestPct = (account.interest * 100).toFixed(2);
   const cats = account.categories || [];
   const totalAllocated = cats.reduce((sum, c) => sum + c.amount, 0);
