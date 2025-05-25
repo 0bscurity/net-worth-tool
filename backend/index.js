@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import projectionRoutes from "./routes/projections.js";
 import acctRoutes from "./routes/accounts.js";
 import subuserRoutes from "./routes/subusers.js";
+import holdingsRoutes from "./routes/holdings.js";
 import { checkJwt } from "./middleware/auth.js";
 
 dotenv.config();

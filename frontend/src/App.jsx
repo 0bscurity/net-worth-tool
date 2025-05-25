@@ -12,6 +12,7 @@ import ProjectionForm from "./pages/ProjectionForm";
 import ProjectionDetail from "./pages/ProjectionDetail";
 import AddSubuserPage from "./pages/AddSubuserPage";
 import SubuserDetailPage from "./pages/SubuserDetailPage";
+import HoldingDetailPage from "./pages/HoldingDetailPage";
 
 // Layout wrapper for authenticated pages (with container)
 function ContainerLayout() {
@@ -40,11 +41,15 @@ export default function App() {
       />
 
       {/* All other routes use ContainerLayout */}
-      <Route element={<ContainerLayout />}>        
+      <Route element={<ContainerLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/add-account" element={<AddAccountPage />} />
         <Route path="/edit-account/:id" element={<EditAccountPage />} />
         <Route path="/accounts/:id" element={<AccountDetailPage />} />
+        <Route
+          path="/accounts/:id/holdings/:holdingId"
+          element={<HoldingDetailPage />}
+        />
 
         {/* projections */}
         <Route path="/projections" element={<ProjectionsList />} />

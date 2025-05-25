@@ -1,39 +1,34 @@
 import Account from "../models/Account.js";
 
 export const addAccount = async (req, res) => {
-  console.log("🟢 [addAccount] called, body =", req.body);
-  try {
-    const { name, institution, type, balance, interest, subuserId } = req.body;
-    const userId = req.auth.sub; // Auth0 user identifier
-    const account = new Account({
-      userId,
-      subuserId,
-      name,
-      institution,
-      type,
-      balance,
-      interest,
-    });
-    await account.save();
-    console.log("🟢 [addAccount] initial save complete, seeding contribution…");
+  const { name, institution, type, balance, interest, subuserId } = req.body;
+  const accountData = {
+    name,
+    institution,
+    type,
+    subuserId,
+    userId: req.auth.sub,
+  };
 
-    // Seed the initial balance as a contribution
-    account.contributions.push({
-      amount: balance,
-      type: "deposit",
-      date: account.createdAt,
-    });
-    await account.save();
-    console.log("✅ [addAccount] contribution seeded, sending response");
-
-    res.status(201).json(account);
-  } catch (err) {
-    console.error(err);
-    console.error("🔴 [addAccount] ERROR", err);
-    res.status(400).json({ message: err.message });
+  if (type === "Investment") {
+    accountData.balance = 0;
+    accountData.interest = 0;
+  } else {
+    accountData.balance = balance;
+    accountData.interest = interest;
+    accountData.contributions = [
+      {
+        amount: balance,
+        type: "deposit",
+        date: new Date(),
+      },
+    ];
   }
-};
 
+  const account = new Account(accountData);
+  await account.save();
+  res.status(201).json(account);
+};
 export const getAccounts = async (req, res) => {
   const accounts = await Account.find({ userId: req.auth.sub });
   res.json(accounts);
@@ -108,6 +103,44 @@ export const addContribution = async (req, res) => {
 
   await account.save();
   res.status(201).json(account);
+};
+
+// POST /api/accounts/:id/withdraw
+export const withdraw = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.auth.sub;
+  const { amount, date } = req.body;
+
+  // 1. Basic validation
+  if (typeof amount !== "number" || amount <= 0) {
+    return res
+      .status(400)
+      .json({ message: "Amount must be a positive number" });
+  }
+
+  // 2. Lookup the account
+  const account = await Account.findOne({ _id: id, userId });
+  if (!account) {
+    return res.status(404).json({ message: "Account not found" });
+  }
+
+  // 3. Prevent overdrafts (if you don’t want negatives)
+  if (amount > account.balance) {
+    return res.status(400).json({ message: "Insufficient funds" });
+  }
+
+  // 4. Record the withdrawal
+  account.contributions.push({
+    amount,
+    type: "withdrawal",
+    date: date ? new Date(date) : new Date(),
+  });
+
+  // 5. Update the stored balance
+  account.balance -= amount;
+
+  await account.save();
+  return res.status(201).json(account);
 };
 
 // Delete a contribution
