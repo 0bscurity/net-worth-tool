@@ -70,6 +70,12 @@ export default function AccountDetailPage() {
       : [...points, seed];
   }, [contributions, storedBalance]);
 
+  const projectedMonthlyInterest = useMemo(() => {
+    const rate = account?.interest ?? 0; // e.g. 0.015 for 1.5% APY
+    const bal = account?.balance ?? 0;
+    return (bal * rate) / 12;
+  }, [account?.interest, account?.balance]);
+
   const filtered = useMemo(() => {
     if (tf === "All") return fullTimeline;
     const days = TIMEFRAMES.find((t) => t.label === tf).days;
@@ -253,6 +259,14 @@ export default function AccountDetailPage() {
           {interestPct > 0 && (
             <div className="text-right">
               <p className="text-sm">{interestPct}% APY</p>
+              {account.interest > 0 && (
+                <p className="text-sm text-gray-600 mt-1">
+                  <span className="font-medium">
+                    ${projectedMonthlyInterest.toFixed(0)}
+                  </span>{" "}
+                  projected/mo
+                </p>
+              )}
             </div>
           )}
         </div>
