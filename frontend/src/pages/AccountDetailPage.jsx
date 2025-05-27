@@ -3,8 +3,6 @@ import React, { useState, useMemo } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useAccount } from "../features/accounts/useAccount";
 import AccountHistoryChart from "../components/ui/charts/AccountHistoryChart";
-import { useHoldings } from "../features/holdings/useHoldings";
-import HoldingRow from "../components/HoldingRow";
 
 const TIMEFRAMES = [
   { label: "W", days: 7 },
@@ -28,8 +26,6 @@ export default function AccountDetailPage() {
   const [toDelete, setToDelete] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState(null);
-  const [showHoldingModal, setShowHoldingModal] = useState(false);
-  const [newTicker, setNewTicker] = useState("");
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [withdrawDate, setWithdrawDate] = useState(
@@ -48,9 +44,6 @@ export default function AccountDetailPage() {
     deleteCategory,
     withdraw,
   } = useAccount(id);
-
-  // Holdings hook for investments
-  const { holdings, loading: holdingsLoading, addHolding } = useHoldings(id);
 
   // Build timeline
   const contributions = account?.contributions ?? [];
@@ -83,6 +76,14 @@ export default function AccountDetailPage() {
     const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
     return fullTimeline.filter((pt) => pt.date.getTime() >= cutoff);
   }, [tf, fullTimeline]);
+
+  const rawContribs = account?.contributions ?? [];
+
+  const sortedContributions = useMemo(() => {
+    return [...rawContribs].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  }, [rawContribs]);
 
   const handleContribute = async (e) => {
     e.preventDefault();
@@ -158,20 +159,9 @@ export default function AccountDetailPage() {
     }
   };
 
-  // Handlers
-  const handleAddHolding = async () => {
-    if (!newTicker) return;
-    await addHolding(newTicker.toUpperCase());
-    setNewTicker("");
-    setShowHoldingModal(false);
-  };
-
-  if (loading || (account?.type === "Investment" && holdingsLoading))
-    return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-500">Error loading account</div>;
   if (!account) return <div className="text-gray-500">Account not found</div>;
-
-  const isInvest = account.type === "Investment";
 
   const dates = filtered.map((pt) => pt.date.toLocaleDateString());
   const balances = filtered.map((pt) => pt.balance);
@@ -317,182 +307,124 @@ export default function AccountDetailPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {isInvest ? (
-          <div className="card bg-white shadow-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold">Holdings</h3>
-              {/* <button
-                className="btn btn-primary btn-circle btn-sm"
-                onClick={() => setShowHoldingModal(true)}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="h-5 w-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
-                  />
-                </svg>
-              </button> */}
+        <div className="card bg-white shadow-lg p-3 lg:p-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-xl font-semibold">Allocations</h3>
+              <p className="text-sm text-gray-500">
+                Unallocated balance: $
+                {balanceAfterAllocations.toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
+              </p>
             </div>
-            {holdings.length === 0 ? (
-              <p className="text-gray-500">No holdings yet.</p>
-            ) : (
-              <ul className="space-y-2">
-                {holdings.map((h) => (
-                  <HoldingRow key={h._id} accountId={id} holding={h} />
-                ))}
-              </ul>
-            )}
-          </div>
-        ) : (
-          <div className="card bg-white shadow-lg p-3 lg:p-6 space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-semibold">Allocations</h3>
-                <p className="text-sm text-gray-500">
-                  Unallocated balance: $
-                  {balanceAfterAllocations.toLocaleString(undefined, {
-                    maximumFractionDigits: 0,
-                  })}
-                </p>
-              </div>
-              <button
-                onClick={openAddCategoryModal}
-                className="btn btn-primary btn-circle btn-sm"
+            <button
+              onClick={openAddCategoryModal}
+              className="btn btn-primary btn-circle btn-sm"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="h-5 w-5"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="h-5 w-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
-                  />
-                </svg>
-              </button>
-            </div>
-            <ul className="space-y-2">
-              {(account.categories || []).map((category) => (
-                <li
-                  key={category._id}
-                  className="flex justify-between items-center p-3 bg-gray-50 rounded-md hover:shadow transition-shadow"
-                >
-                  <div>
-                    <p className="font-semibold">{category.name}</p>
-                    <p className="text-sm text-gray-500">
-                      Amount: ${category.amount.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleEditCategory(category)}
-                      className="text-blue-500 hover:text-blue-700"
-                      title="Edit"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="size-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => deleteCategory(category._id)}
-                      className="text-red-500 hover:text-red-700"
-                      title="Delete"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="size-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+            </button>
           </div>
-        )}
+          <ul className="space-y-2">
+            {(account.categories || []).map((category) => (
+              <li
+                key={category._id}
+                className="flex justify-between items-center p-3 bg-gray-50 rounded-md hover:shadow transition-shadow"
+              >
+                <div>
+                  <p className="font-semibold">{category.name}</p>
+                  <p className="text-sm text-gray-500">
+                    Amount: ${category.amount.toLocaleString()}
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleEditCategory(category)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => deleteCategory(category._id)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Delete"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
 
         {/* Transaction History */}
         <div className="card bg-white shadow p-3 lg:p-6">
           <h3 className="text-xl font-semibold mb-4">Transaction History</h3>
           <div className="space-y-2">
-            {account.contributions
-              .sort((a, b) => new Date(b.date) - new Date(a.date))
-              .map((c, i) => (
-                <div key={i} className="flex justify-between items-center">
-                  <div>
-                    <span className="font-medium capitalize">{c.type}</span>{" "}
-                    <span className="text-sm text-gray-500 ml-2">
-                      {new Date(c.date).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span
-                      className={
-                        c.type === "withdrawal"
-                          ? "text-red-500"
-                          : "text-green-500"
-                      }
-                    >
-                      {c.type === "withdrawal" ? "−" : "+"}$
-                      {c.amount.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                      })}
-                    </span>
-                    {/* <button
-                  onClick={() => handleDeleteContribution(c._id)}
-                  className="text-red-500 hover:text-red-700 transition-colors"
-                  title="Delete Contribution"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button> */}
-                  </div>
+            {sortedContributions.map((c) => (
+              <div key={c._id} className="flex justify-between items-center">
+                <div>
+                  <span className="font-medium capitalize">{c.type}</span>{" "}
+                  <span className="text-sm text-gray-500 ml-2">
+                    {new Date(c.date).toLocaleDateString()}
+                  </span>
                 </div>
-              ))}
+                <div className="flex items-center space-x-2">
+                  <span
+                    className={
+                      c.type === "withdrawal"
+                        ? "text-red-500"
+                        : "text-green-500"
+                    }
+                  >
+                    {c.type === "withdrawal" ? "−" : "+"}$
+                    {c.amount.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -633,32 +565,6 @@ export default function AccountDetailPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {showHoldingModal && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg mb-4">Add Holding</h3>
-            <input
-              type="text"
-              placeholder="Ticker"
-              className="input input-bordered w-full mb-4"
-              value={newTicker}
-              onChange={(e) => setNewTicker(e.target.value)}
-            />
-            <div className="modal-action">
-              <button
-                className="btn"
-                onClick={() => setShowHoldingModal(false)}
-              >
-                Cancel
-              </button>
-              <button className="btn btn-primary" onClick={handleAddHolding}>
-                Add
-              </button>
-            </div>
           </div>
         </div>
       )}

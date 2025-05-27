@@ -10,20 +10,15 @@ export const addAccount = async (req, res) => {
     userId: req.auth.sub,
   };
 
-  if (type === "Investment") {
-    accountData.balance = 0;
-    accountData.interest = 0;
-  } else {
-    accountData.balance = balance;
-    accountData.interest = interest;
-    accountData.contributions = [
-      {
-        amount: balance,
-        type: "deposit",
-        date: new Date(),
-      },
-    ];
-  }
+  accountData.balance = balance;
+  accountData.interest = interest;
+  accountData.contributions = [
+    {
+      amount: balance,
+      type: "deposit",
+      date: new Date(),
+    },
+  ];
 
   const account = new Account(accountData);
   await account.save();
