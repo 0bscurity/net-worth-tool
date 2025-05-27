@@ -27,9 +27,8 @@ export default function AddAccountPage() {
         institution,
         type,
         // always include balance & interest as numbers
-        balance: type === "Investment" ? 0 : parseFloat(balance),
-        interest:
-          type === "Investment" ? 0 : interest ? parseFloat(interest) / 100 : 0,
+        balance: parseFloat(balance),
+        interest: interest ? parseFloat(interest) / 100 : 0,
         ...(subuserId && { subuserId }),
       };
 
@@ -37,7 +36,7 @@ export default function AddAccountPage() {
       const account = await addAccount(payload);
 
       // If investment type, redirect to holdings page to add holdings
-      if (type === "Investment" && account._id) {
+      if (account._id) {
         navigate(`/accounts/${account._id}`);
       } else {
         navigate("/dashboard");
@@ -128,50 +127,40 @@ export default function AddAccountPage() {
             </div>
           </div>
 
-          {/* Conditional Investment vs Other Fields */}
-          {type === "Investment" ? (
-            <div className="mb-6">
-              <p className="mb-4 text-gray-600">
-                This will create your brokerage account. On the next page, you
-                can add individual holdings and lots (shares × price).
-              </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Starting Balance */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Starting Balance</span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                className="input input-bordered w-full"
+                placeholder="0.00"
+                value={balance}
+                onChange={(e) => setBalance(e.target.value)}
+                required
+              />
             </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              {/* Starting Balance */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Starting Balance</span>
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className="input input-bordered w-full"
-                  placeholder="0.00"
-                  value={balance}
-                  onChange={(e) => setBalance(e.target.value)}
-                  required
-                />
-              </div>
-              {/* Interest Rate */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">
-                    Interest Rate (%){" "}
-                    <span className="text-xs text-gray-400">(optional)</span>
-                  </span>
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className="input input-bordered w-full"
-                  placeholder="e.g. 1.50"
-                  value={interest}
-                  onChange={(e) => setInterest(e.target.value)}
-                />
-              </div>
+            {/* Interest Rate */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">
+                  Interest Rate (%){" "}
+                  <span className="text-xs text-gray-400">(optional)</span>
+                </span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                className="input input-bordered w-full"
+                placeholder="e.g. 1.50"
+                value={interest}
+                onChange={(e) => setInterest(e.target.value)}
+              />
             </div>
-          )}
+          </div>
 
           {/* Submit Button */}
           <div className="flex justify-center mt-8">
